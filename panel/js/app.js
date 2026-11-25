@@ -94,6 +94,7 @@ function applyRoles(palette) {
   lastPalette = palette;
   document.documentElement.setAttribute('data-l-mode', prefMode === 'light' ? 'light' : 'dark');
   writeRoles(prefMode === 'light' ? LIGHT_SIGNATURE : palette);
+  updateHomeStrip();
 }
 
 /* ---------- Wallpaper: auth Blob, preload, crossfade ---------- */
@@ -116,7 +117,7 @@ async function setWallpaper(url, version) {
     wpObjectUrl = objUrl;
     if (oldUrl && oldUrl !== objUrl) URL.revokeObjectURL(oldUrl);
     lastWpVersion = version;
-    if (lastAudio) updateBackdrops(lastAudio);
+    if (lastAudio) updateBackdrops();
   } catch (_) { /* keep last wallpaper on transient failure */ }
 }
 
@@ -226,19 +227,34 @@ function setBackdrop(el, url) {
   el.style.backgroundImage = url ? `url("${url}")` : '';
 }
 
-/* High-definition art: real album art when available, wallpaper otherwise. */
-function updateBackdrops(audio) {
-  const art = artObjectUrl || wpObjectUrl;
-  setBackdrop($('#banner-art'), art);
-  setBackdrop($('#mini-art'), art);
-  const banner = $('#now-banner');
-  const active = !!(audio.title || audio.artist || (audio.player && audio.player !== 'no player'));
-  banner.hidden = !active;
-  if (!active) return;
-  $('#banner-player').textContent = audio.player || 'player';
-  $('#banner-title').textContent = audio.title || '—';
-  $('#banner-artist').textContent = audio.artist || '—';
-  $('#banner-sink').textContent = audio.sink || 'no output';
+/* Media art now lives only in the compact Media-page mini card. */
+function updateBackdrops() {
+  setBackdrop($('#mini-art'), artObjectUrl || wpObjectUrl);
+}
+
+/* Compact HOME strip: live link facts and the wallpaper's palette. */
+let lastVitals = null;
+function updateHomeStrip() {
+  const net = $('#strip-network');
+  const bt = $('#strip-bt');
+  const up = $('#strip-uptime');
+  const sw = $('#strip-swatches');
+  if (!net || !bt || !up || !sw) return;
+  net.textContent = connections.network || (connections.wifi ? 'WI-FI' : 'OFFLINE');
+  bt.textContent = connections.bluetooth ? 'ON' : 'OFF';
+  if (lastVitals && lastVitals.uptime != null) {
+    const mins = Math.floor(lastVitals.uptime / 60);
+    up.textContent = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
+  }
+  sw.textContent = '';
+  for (const role of ['gold', 'sel', 'jasper', 'stone2', 'field', 'fg']) {
+    const color = lastPalette && lastPalette[role];
+    if (!color) continue;
+    const chip = document.createElement('i');
+    chip.style.background = color;
+    chip.title = `${role} · ${color}`;
+    sw.append(chip);
+  }
 }
 
 async function loadArt(url) {
@@ -266,7 +282,7 @@ async function loadArt(url) {
     if (prev && prev !== next) prev.remove();
     if (oldObj && oldObj !== obj) URL.revokeObjectURL(oldObj);
   }, 320);
-  if (lastAudio) updateBackdrops(lastAudio);
+  if (lastAudio) updateBackdrops();
 }
 function artFront() { return $('#art-frame img:last-child'); }
 
@@ -339,6 +355,7 @@ async function loadShortcuts() {
 async function refreshVitals() {
   let v;
   try { v = await (await api('/api/vitals')).json(); } catch (_) { return; }
+  lastVitals = v;
   $('#sum-cpu').textContent = `${Math.round(v.cpu)}%`;
   $('#sum-ram').textContent = `${Math.round(v.ram.percent)}%`;
   const rows = [
@@ -358,6 +375,7 @@ async function refreshVitals() {
     card.append(l, val, p);
     grid.append(card);
   }
+  updateHomeStrip();
 }
 
 function renderSinks(sinks, activeName) {
@@ -395,7 +413,7 @@ async function refreshAudio() {
   renderSinks(a.sinks, a.sink_name);
   setMuteTile(a.muted);
   paintPlayButtons(a.playing === true);
-  updateBackdrops(a);
+  updateBackdrops();
   if (a.art_url) loadArt(a.art_url);
 }
 
@@ -411,6 +429,7 @@ async function refreshConnections() {
   try { connections = await (await api('/api/connections')).json(); } catch (_) { return; }
   setTileState('wifi', connections.wifi, connections.wifi ? (connections.network || 'ON') : 'OFF');
   setTileState('bt', connections.bluetooth, connections.bluetooth ? 'ON' : 'OFF');
+  updateHomeStrip();
 }
 
 async function refreshAll() {

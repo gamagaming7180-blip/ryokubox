@@ -61,19 +61,12 @@
           <div class="home-motto l-type-proof">力と美のために</div>
         </div>
 
-        <!-- High-definition now-playing banner fills the previously empty area. -->
-        <div id="now-banner" class="l-cut" hidden>
-          <div id="banner-art" class="banner-art"></div>
-          <div class="banner-scrim"></div>
-          <div class="banner-body">
-            <span class="banner-kicker l-type-caption">NOW PLAYING · <span id="banner-player">—</span></span>
-            <strong id="banner-title" class="l-type-section">—</strong>
-            <span id="banner-artist" class="l-type-detail">—</span>
-            <span id="banner-sink" class="l-type-caption">—</span>
-          </div>
-          <button class="l-icon-plaque l-gold banner-play" data-media="play-pause" aria-label="Play or pause">
-            <span class="l-glyph" aria-hidden="true">play_arrow</span>
-          </button>
+        <!-- Compact live strip: link facts that fit the space, no giant art. -->
+        <div id="home-strip" class="home-strip">
+          <div class="strip-card l-cut"><span class="l-type-caption">NETWORK</span><strong id="strip-network" class="l-type-detail">—</strong></div>
+          <div class="strip-card l-cut"><span class="l-type-caption">BLUETOOTH</span><strong id="strip-bt" class="l-type-detail">—</strong></div>
+          <div class="strip-card l-cut"><span class="l-type-caption">UPTIME</span><strong id="strip-uptime" class="l-type-detail l-numeric">—</strong></div>
+          <div class="strip-card l-cut strip-palette"><span class="l-type-caption">LIVE PALETTE</span><div id="strip-swatches" class="strip-swatches"></div></div>
         </div>
 
         <div class="home-summary" id="home-summary">

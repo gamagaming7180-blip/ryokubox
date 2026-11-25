@@ -130,30 +130,21 @@ body { color: var(--lithic-fg); font-family: var(--lithic-font-sans); }
 .home-clock-row { flex: 0 0 auto; }
 #home-clock { color: var(--lithic-fg); font-size: clamp(40px, 8vh, 80px); line-height: .98; font-variant-numeric: tabular-nums; }
 .home-motto { color: var(--lithic-fg2); }
-#now-banner {
+.home-strip {
+  flex: 1 1 auto; min-height: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr);
+  gap: var(--lithic-space-s2);
+}
+.strip-card {
   --l-cut: var(--lithic-cut-mid); --l-fill: var(--rb-glass-strong); --l-stroke: var(--lithic-vein); --l-stroke-width: 1px;
-  flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden; isolation: isolate;
+  padding: var(--lithic-space-s2) var(--lithic-space-s3);
+  display: flex; flex-direction: column; justify-content: center;
+  gap: var(--lithic-space-s1); min-width: 0;
 }
-.banner-art {
-  position: absolute; inset: 0; z-index: -2;
-  background-size: cover; background-position: center;
-  filter: saturate(115%) contrast(105%);
-}
-.banner-scrim {
-  position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(90deg,
-    color-mix(in srgb, var(--lithic-ground) 88%, transparent) 0%,
-    color-mix(in srgb, var(--lithic-ground) 52%, transparent) 55%,
-    color-mix(in srgb, var(--lithic-ground) 20%, transparent) 100%);
-}
-.banner-body {
-  position: absolute; left: var(--lithic-space-s4); bottom: var(--lithic-space-s3);
-  display: flex; flex-direction: column; gap: 2px; max-width: 74%;
-}
-.banner-kicker { color: var(--lithic-gold); letter-spacing: .12em; }
-.banner-body strong { color: var(--lithic-fg); font-size: clamp(20px, 3.4vh, 32px); line-height: 1.1; }
-.banner-body .l-type-detail, .banner-body .l-type-caption { color: var(--lithic-fg2); }
-.banner-play { position: absolute; right: var(--lithic-space-s3); bottom: var(--lithic-space-s3); min-width: 48px; min-height: 48px; }
+.strip-card .l-type-caption { color: var(--lithic-fg3); letter-spacing: .1em; }
+.strip-card strong { color: var(--lithic-fg); font-size: clamp(14px, 2.2vh, 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip-swatches { display: flex; align-items: center; gap: 6px; }
+.strip-swatches i { display: block; width: clamp(20px, 3.2vh, 34px); height: clamp(20px, 3.2vh, 34px); border: 1px solid var(--lithic-vein); }
 .home-summary {
   flex: 0 0 auto; height: clamp(74px, 13vh, 116px);
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--lithic-space-s2);
