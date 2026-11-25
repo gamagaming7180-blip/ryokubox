@@ -11,6 +11,7 @@ USB debugging, no pairing code, no firewall command.
 - `src/` — Rust/axum agent on port 8875 (vitals, audio, media, wallpaper, shortcuts, auth)
 - `panel/` — HTML/CSS/JS deck (Geologica, Martian Mono, Material Symbols Sharp)
 - `android/` — minimal Android WebView shell; `build.sh` bakes the current token and LAN IP
+- `android/res/` — launcher icon, rasterized from the panel's own `icons/icon.svg` (same 力 mark)
 - `scripts/connect.sh` — status / rebuild-and-install helper
 - `scripts/mdns.sh` — publishes `_ryokubox._tcp` with the current IPv4 in TXT
 - `systemd/` — user services for the agent and mDNS publisher

@@ -29,8 +29,11 @@ final class BuildConfig {
 }
 JAVA_EOF
 
+echo "== compiling resources =="
+"$BT/aapt2" compile --dir res -o build/res.zip
+
 echo "== linking manifest =="
-"$BT/aapt2" link -o build/base.apk -I "$AJAR" \
+"$BT/aapt2" link -o build/base.apk -I "$AJAR" -R build/res.zip \
   --manifest AndroidManifest.xml --java gen \
   --min-sdk-version 24 --target-sdk-version 35
 
