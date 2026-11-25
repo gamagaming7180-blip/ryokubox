@@ -93,7 +93,9 @@ What this does, automatically:
 Output: `android/RyokuBox.apk`, also copied to `~/Downloads/RyokuBox.apk`.
 
 > The APK is safe to distribute: it contains no token. Each phone gets its own
-> token by pairing on first launch. The token never appears in the repo.
+> token by pairing on first launch. The token never appears in the repo. The
+> signed APK is committed at `android/RyokuBox.apk` and can be downloaded
+> directly from GitHub.
 
 ### Step 4 — Install the APK on the phone (two options)
 

@@ -1,6 +1,6 @@
 /target
-# Built APK embeds the device's pairing token — never commit it publicly.
-android/RyokuBox.apk
+# The APK is token-free and committed on purpose. Signature metadata and the
+# debug keystore stay local.
 android/RyokuBox.apk.idsig
 android/build/
 android/classes/
