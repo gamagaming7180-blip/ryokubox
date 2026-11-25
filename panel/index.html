@@ -124,24 +124,31 @@
       </div>
     </section>
 
-    <!-- 02 MEDIA -->
+    <!-- 02 MEDIA — immersive now-playing, Spicy-inspired, Ryoku-styled -->
     <section class="page" id="page-media" aria-label="Media">
       <div class="page-inner media-stage">
-        <div class="art-corner">
+        <div id="media-bg" class="media-bg"></div>
+        <div class="media-veil"></div>
+
+        <div class="media-top">
+          <span class="media-kicker">力 · NOW PLAYING</span>
+          <span class="l-cut badge" id="player-badge"><span class="l-glyph" aria-hidden="true">graphic_eq</span><span id="player-name">no player</span></span>
+        </div>
+
+        <div class="media-hero">
           <div id="art-frame" class="l-cut">
             <img id="art-img" alt="Album art" hidden>
             <div id="art-empty" class="l-hatch art-empty"></div>
           </div>
-          <div id="track-title" class="l-type-title">Nothing playing</div>
-          <div id="track-artist" class="l-type-detail">—</div>
-          <div id="track-source" class="l-type-caption">—</div>
+          <div class="hero-copy">
+            <div id="track-title">Nothing playing</div>
+            <div id="track-artist">—</div>
+            <div class="hero-rule"></div>
+            <div id="track-source" class="l-type-caption">—</div>
+          </div>
         </div>
 
-        <div class="media-middle">
-          <div class="seek-row">
-            <button class="l-icon-plaque l-tonal seek" data-media="seek-back" aria-label="Back 10 seconds"><span class="l-glyph" aria-hidden="true">replay_10</span></button>
-            <button class="l-icon-plaque l-tonal seek" data-media="seek-fwd" aria-label="Forward 10 seconds"><span class="l-glyph" aria-hidden="true">forward_10</span></button>
-          </div>
+        <div class="media-bottom">
           <div class="media-volume">
             <span class="l-glyph" aria-hidden="true">volume_up</span>
             <div class="l-slider-field" id="media-volume-field" style="--l-value:.5">
@@ -150,16 +157,14 @@
             </div>
             <span class="l-type-label l-numeric" id="media-volume-value">50%</span>
           </div>
-          <div class="badges">
-            <span class="l-cut badge" id="player-badge"><span class="l-glyph" aria-hidden="true">graphic_eq</span><span id="player-name">no player</span></span>
-            <span class="l-cut badge" id="sink-badge"><span class="l-glyph" aria-hidden="true">speaker</span><span id="sink-name">no output</span></span>
+          <span class="l-cut badge" id="sink-badge"><span class="l-glyph" aria-hidden="true">speaker</span><span id="sink-name">no output</span></span>
+          <div class="transport l-cut">
+            <button class="l-icon-plaque l-quiet seek" data-media="seek-back" aria-label="Back 10 seconds"><span class="l-glyph" aria-hidden="true">replay_10</span></button>
+            <button class="l-icon-plaque l-quiet" data-media="prev" aria-label="Previous"><span class="l-glyph" aria-hidden="true">skip_previous</span></button>
+            <button class="l-icon-plaque l-gold play" data-media="play-pause" aria-label="Play or pause"><span class="l-glyph" aria-hidden="true">play_arrow</span></button>
+            <button class="l-icon-plaque l-quiet" data-media="next" aria-label="Next"><span class="l-glyph" aria-hidden="true">skip_next</span></button>
+            <button class="l-icon-plaque l-quiet seek" data-media="seek-fwd" aria-label="Forward 10 seconds"><span class="l-glyph" aria-hidden="true">forward_10</span></button>
           </div>
-        </div>
-
-        <div class="transport l-cut">
-          <button class="l-icon-plaque l-quiet" data-media="prev" aria-label="Previous"><span class="l-glyph" aria-hidden="true">skip_previous</span></button>
-          <button class="l-icon-plaque l-gold play" data-media="play-pause" aria-label="Play or pause"><span class="l-glyph" aria-hidden="true">play_arrow</span></button>
-          <button class="l-icon-plaque l-quiet" data-media="next" aria-label="Next"><span class="l-glyph" aria-hidden="true">skip_next</span></button>
         </div>
       </div>
     </section>
