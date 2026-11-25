@@ -507,6 +507,7 @@ const observer = new IntersectionObserver((entries) => {
     if (entry.isIntersecting) {
       const index = [...entry.target.parentElement.children].indexOf(entry.target);
       tabs.forEach((t, i) => t.setAttribute('aria-current', String(i === index)));
+      document.body.classList.toggle('on-home', index === 0);
     }
   }
 }, { root: pagesEl, threshold: 0.6 });

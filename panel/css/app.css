@@ -124,40 +124,37 @@ body { color: var(--lithic-fg); font-family: var(--lithic-font-sans); }
 .l-cut { backdrop-filter: var(--rb-blur); -webkit-backdrop-filter: var(--rb-blur); }
 
 /* ---------- 00 Home ---------- */
+/* ---------- 00 Home — quiet, wallpaper-led ---------- */
 .home-inner { justify-content: flex-start; }
-.home-lead { flex: 0 0 auto; display: flex; align-items: center; gap: var(--lithic-space-s2); color: var(--lithic-fg3); }
-.home-mark { font-size: 20px; color: var(--lithic-gold); }
+.home-lead { flex: 0 0 auto; }
+.home-mark { font-size: 16px; color: var(--lithic-gold); }
 .home-clock-row { flex: 0 0 auto; }
-#home-clock { color: var(--lithic-fg); font-size: clamp(40px, 8vh, 80px); line-height: .98; font-variant-numeric: tabular-nums; }
-.home-motto { color: var(--lithic-fg2); }
-.home-strip {
-  flex: 1 1 auto; min-height: 0;
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr);
-  gap: var(--lithic-space-s2);
-}
-.strip-card {
-  --l-cut: var(--lithic-cut-mid); --l-fill: var(--rb-glass-strong); --l-stroke: var(--lithic-vein); --l-stroke-width: 1px;
-  padding: var(--lithic-space-s2) var(--lithic-space-s3);
-  display: flex; flex-direction: column; justify-content: center;
-  gap: var(--lithic-space-s1); min-width: 0;
-}
-.strip-card .l-type-caption { color: var(--lithic-fg3); letter-spacing: .1em; }
-.strip-card strong { color: var(--lithic-fg); font-size: clamp(14px, 2.2vh, 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.strip-swatches { display: flex; align-items: center; gap: 6px; }
-.strip-swatches i { display: block; width: clamp(20px, 3.2vh, 34px); height: clamp(20px, 3.2vh, 34px); border: 1px solid var(--lithic-vein); }
+#home-clock { color: var(--lithic-fg); font-size: clamp(34px, 6vh, 62px); line-height: .98; font-variant-numeric: tabular-nums; }
+.home-motto { color: var(--lithic-fg2); font-size: 11px; }
+.home-spacer { flex: 1 1 auto; min-height: 0; }
 .home-summary {
-  flex: 0 0 auto; height: clamp(74px, 13vh, 116px);
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--lithic-space-s2);
+  flex: 0 0 auto; height: clamp(52px, 8vh, 72px);
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--lithic-space-s1);
 }
 .summary-card {
-  --l-cut: var(--lithic-cut-mid); --l-fill: var(--rb-glass-strong); --l-stroke: var(--lithic-vein); --l-stroke-width: 1px;
-  padding: var(--lithic-space-s2) var(--lithic-space-s3);
-  display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0;
+  --l-cut: var(--lithic-cut-small);
+  --l-fill: color-mix(in srgb, var(--lithic-ground) 56%, transparent);
+  --l-stroke: var(--lithic-vein); --l-stroke-width: 1px;
+  padding: var(--lithic-space-s1) var(--lithic-space-s2);
+  display: flex; align-items: baseline; gap: var(--lithic-space-s1); min-width: 0;
 }
-.summary-card .l-type-caption { color: var(--lithic-fg3); letter-spacing: .1em; }
-.summary-card strong { color: var(--lithic-fg); font-size: clamp(18px, 2.9vh, 26px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.summary-card .l-type-detail { color: var(--lithic-fg2); }
-.home-foot { flex: 0 0 auto; color: var(--lithic-fg3); letter-spacing: .05em; padding: 2px 0 4px; margin-top: 2px; }
+.summary-card .l-type-caption { color: var(--lithic-fg3); letter-spacing: .12em; font-size: 9px; }
+.summary-card strong { color: var(--lithic-fg); font-size: clamp(14px, 2vh, 18px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.summary-card .l-type-detail { display: none; }
+.home-foot { flex: 0 0 auto; color: var(--lithic-fg3); letter-spacing: .05em; font-size: 10px; padding: 2px 0 0; }
+
+/* HOME keeps the wallpaper dominant; other pages keep the stronger scrim. */
+body.on-home #scrim {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--lithic-ground) 26%, transparent) 0%,
+    transparent 45%,
+    color-mix(in srgb, var(--lithic-ground) 58%, transparent) 100%);
+}
 
 /* ---------- 01 Deck ---------- */
 .controls-columns {
