@@ -665,8 +665,17 @@ window.addEventListener('load', jumpToHash);
 
 (async () => {
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
-  const code = new URLSearchParams(location.search).get('pair');
-  if (code) {
+  const params = new URLSearchParams(location.search);
+  const code = params.get('pair');
+  const pasted = params.get('token');
+  if (pasted && !code) {
+    token = pasted.trim();
+    localStorage.setItem('ryokubox.token', token);
+    if ($('#set-status')) $('#set-status').textContent = 'LINK ACTIVE';
+    $('#pair-gate').hidden = true;
+    history.replaceState({}, '', location.pathname);
+    start();
+  } else if (code) {
     const ok = await tryPair(code);
     if (ok) start(); else showGate('That pairing code is invalid or has expired.');
   } else if (token) {

@@ -24,7 +24,7 @@ use tokio_stream::wrappers::BroadcastStream;
 use tower_http::cors::CorsLayer;
 use tower_http::services::ServeDir;
 
-use auth::{bearer_ok, ct_eq, is_loopback, random_hex, PairState, PAIR_TTL_SECS};
+use auth::{bearer_ok, is_loopback, random_hex, PairState, PAIR_TTL_SECS};
 use shortcuts::Shortcut;
 use wallpaper::{Detected, Palette};
 
@@ -238,9 +238,10 @@ struct PairReq { code: String }
 
 async fn pair(State(st): State<AppState>, Json(body): Json<PairReq>) -> Response {
     let token = st.token.read().unwrap().clone();
-    // A device can present its own permanent token as a self-pairing key, so the
-    // app never needs a code typed by hand. Constant-time, same as bearer auth.
-    let ok = st.pair.lock().unwrap().redeem(&body.code) || ct_eq(&token, &body.code);
+    // A fresh device presents a one-time code (console QR, mDNS TXT, or the
+    // in-app scanner). The permanent token is never accepted as a pairing code,
+    // so a leaked APK cannot self-pair.
+    let ok = st.pair.lock().unwrap().redeem(&body.code);
     if !ok { return (StatusCode::UNAUTHORIZED, Json(json!({"error":"invalid or expired code"}))).into_response(); }
     Json(json!({ "token": token })).into_response()
 }

@@ -13,18 +13,14 @@ cd "$HERE"
 rm -rf build gen classes dex
 mkdir -p build gen classes dex
 
-echo "== baking auto-link config =="
-TOKEN_FILE="${HOME}/.config/ryokubox/token"
-TOKEN="$(tr -d '\r\n' < "$TOKEN_FILE" 2>/dev/null || true)"
+echo "== generating link config (no credentials baked) =="
 LANIP="$(ip -4 -br addr show 2>/dev/null | awk '$3 !~ /^127\./ {sub(/\/.*/,"",$3); print $3; exit}')"
 [ -n "$LANIP" ] || LANIP="127.0.0.1"
-[ -n "$TOKEN" ] || { echo "No agent token at $TOKEN_FILE — start ryokubox once first." >&2; exit 1; }
 mkdir -p gen/com/ryoku/ryokubox
 cat > gen/com/ryoku/ryokubox/BuildConfig.java <<JAVA_EOF
 package com.ryoku.ryokubox;
-/** Generated on the PC at build time: auto link & pair credentials. */
+/** Generated on the PC at build time. Only a fallback address — never a secret. */
 final class BuildConfig {
-    static final String TOKEN = "$TOKEN";
     static final String FALLBACK_HOST = "$LANIP:8875";
 }
 JAVA_EOF
@@ -38,13 +34,14 @@ echo "== linking manifest =="
   --min-sdk-version 24 --target-sdk-version 35
 
 echo "== compiling java =="
+ZXING="libs/core-3.5.3.jar"
 javac -nowarn -source 8 -target 8 -encoding UTF-8 \
-  -classpath "$AJAR" -d classes \
+  -classpath "$AJAR:$ZXING" -d classes \
   $(find src gen -name '*.java' | sort)
 
 echo "== dexing =="
 "$BT/d8" --lib "$AJAR" --min-api 24 --output dex \
-  $(find classes -name '*.class' | sort)
+  $(find classes -name '*.class' | sort) "$ZXING"
 
 cp dex/classes.dex build/classes.dex
 (cd build && jar uf base.apk classes.dex)

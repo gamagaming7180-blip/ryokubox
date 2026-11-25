@@ -1,8 +1,10 @@
 package com.ryoku.ryokubox;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -13,6 +15,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -27,31 +30,33 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/** Ryoku Box — fullscreen landscape companion for the Lithic deck on the PC. */
+/** Ryoku Box — fullscreen companion for the Lithic deck on the PC. No baked secrets. */
 public class MainActivity extends Activity {
 
     private static final String SERVICE_TYPE = "_ryokubox._tcp";
     private static final String DEFAULT_HOST = BuildConfig.FALLBACK_HOST;
-    private static final String SELF_PAIR_KEY = BuildConfig.TOKEN;
+    private static final int CAMERA_REQ = 7;
 
     private WebView web;
     private View connectPanel;
+    private View scannerPanel;
     private EditText hostField;
     private EditText codeField;
+    private EditText tokenField;
     private SharedPreferences prefs;
     private NsdManager nsd;
     private NsdManager.DiscoveryListener discoveryListener;
+    private QrScanner scanner;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private boolean connected = false;
+    private String pendingToken = null;
 
     private final Runnable fallback = new Runnable() {
         @Override public void run() {
             if (connected) return;
             connected = true;
             stopDiscovery();
-            // Always use the PC's LAN address baked at build time; stale 127.0.0.1
-            // entries from the old adb-reverse setup never apply here.
-            load(DEFAULT_HOST, SELF_PAIR_KEY);
+            showConnect(null);
         }
     };
 
@@ -64,7 +69,6 @@ public class MainActivity extends Activity {
         prefs = getSharedPreferences("ryokubox", Context.MODE_PRIVATE);
         getWindow().setStatusBarColor(Color.BLACK);
         getWindow().setNavigationBarColor(Color.BLACK);
-        // This is an always-on desk deck: never sleep while it is in front.
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -83,30 +87,42 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setTextZoom(100);
         web.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                return false;
-            }
-            @Override
-            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            @Override public boolean shouldOverrideUrlLoading(WebView view, String url) { return false; }
+            @Override public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 showConnect("Cannot reach the agent. Check the network, then retry.");
+            }
+            @Override public void onPageFinished(WebView view, String url) {
+                if (pendingToken != null) {
+                    final String t = pendingToken;
+                    pendingToken = null;
+                    view.evaluateJavascript(
+                            "localStorage.setItem('ryokubox.token','" + t + "');location.reload();", null);
+                }
             }
         });
         root.addView(web, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        // Manual Link & Pairing stays as a hidden fallback only — normal path needs no input.
         buildConnectPanel();
         root.addView(connectPanel, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        buildScannerPanel();
+        root.addView(scannerPanel, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
 
         hostField.setText(prefs.getString("host", DEFAULT_HOST));
         connectPanel.setVisibility(View.GONE);
-        autoConnect();
+        scannerPanel.setVisibility(View.GONE);
+        if (prefs.getBoolean("paired", false)) {
+            connected = true;
+            load(prefs.getString("host", DEFAULT_HOST), null, null);
+        } else {
+            autoConnect();
+        }
     }
 
-    /** Find the PC over mDNS and open the deck. No host, code, ADB or firewall steps. */
+    /** Built-in scanner: reads the mDNS TXT record, not the camera. */
     private void autoConnect() {
         connected = false;
         handler.postDelayed(fallback, 4000);
@@ -117,7 +133,6 @@ public class MainActivity extends Activity {
                 @Override public void onStartDiscoveryFailed(String type, int errorCode) { fallback.run(); }
                 @Override public void onServiceLost(NsdServiceInfo info) { }
                 @Override public void onStopDiscoveryFailed(String type, int errorCode) { }
-
                 @Override public void onDiscoveryStopped(String type) { }
 
                 @Override public void onServiceFound(NsdServiceInfo info) {
@@ -126,21 +141,20 @@ public class MainActivity extends Activity {
                         nsd.resolveService(info, new NsdManager.ResolveListener() {
                             @Override public void onResolveFailed(NsdServiceInfo i, int code) { }
                             @Override public void onServiceResolved(NsdServiceInfo i) {
-                                // The PC publishes its IPv4 in the mDNS TXT record so an
-                                // IPv6-only resolve still yields a working address.
-                                String ip = null;
-                                try {
-                                    byte[] raw = i.getAttributes().get("ip");
-                                    if (raw != null) ip = new String(raw, "UTF-8").trim();
-                                } catch (Exception ignored) { }
-                                String host = (ip == null || ip.isEmpty())
-                                        ? DEFAULT_HOST : ip + ":" + i.getPort();
+                                String ip = txt(i, "ip");
+                                String pair = txt(i, "pair");
+                                String name = i.getServiceName();
+                                if ((pair == null || pair.isEmpty()) && name != null && name.startsWith("Ryoku Box ")) {
+                                    pair = name.substring("Ryoku Box ".length()).trim();
+                                }
+                                String host = (ip == null || ip.isEmpty()) ? DEFAULT_HOST : ip + ":" + i.getPort();
                                 handler.removeCallbacks(fallback);
                                 stopDiscovery();
                                 if (connected) return;
+                                if (pair == null || pair.isEmpty()) { showConnect(null); return; }
                                 connected = true;
-                                prefs.edit().putString("host", host).putBoolean("paired", true).apply();
-                                load(host, SELF_PAIR_KEY);
+                                save(host, true);
+                                load(host, pair, null);
                             }
                         });
                     } catch (Exception ignored) { }
@@ -152,10 +166,16 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void stopDiscovery() {
+    private String txt(NsdServiceInfo info, String key) {
         try {
-            if (nsd != null && discoveryListener != null) nsd.stopServiceDiscovery(discoveryListener);
-        } catch (Exception ignored) { }
+            byte[] raw = info.getAttributes().get(key);
+            return raw == null ? null : new String(raw, "UTF-8").trim();
+        } catch (Exception e) { return null; }
+    }
+
+    private void stopDiscovery() {
+        try { if (nsd != null && discoveryListener != null) nsd.stopServiceDiscovery(discoveryListener); }
+        catch (Exception ignored) { }
     }
 
     private void buildConnectPanel() {
@@ -163,69 +183,159 @@ public class MainActivity extends Activity {
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setGravity(Gravity.CENTER);
         panel.setBackgroundColor(Color.argb(235, 0, 0, 0));
-        panel.setPadding(48, 32, 48, 32);
+        panel.setPadding(40, 24, 40, 24);
 
         TextView mark = new TextView(this);
-        mark.setText("力");
-        mark.setTextColor(Color.rgb(206, 94, 50));
-        mark.setTextSize(46);
-        mark.setGravity(Gravity.CENTER);
+        mark.setText("力"); mark.setTextColor(Color.rgb(206, 94, 50));
+        mark.setTextSize(38); mark.setGravity(Gravity.CENTER);
         panel.addView(mark);
 
         TextView title = new TextView(this);
-        title.setText("RYOKU BOX");
-        title.setTextColor(Color.rgb(205, 196, 186));
-        title.setTypeface(Typeface.DEFAULT_BOLD);
-        title.setTextSize(22);
-        title.setGravity(Gravity.CENTER);
+        title.setText("RYOKU BOX"); title.setTextColor(Color.rgb(205, 196, 186));
+        title.setTypeface(Typeface.DEFAULT_BOLD); title.setTextSize(20); title.setGravity(Gravity.CENTER);
         panel.addView(title);
 
         TextView hint = new TextView(this);
-        hint.setText("Connect to the agent on your computer");
-        hint.setTextColor(Color.rgb(149, 143, 135));
-        hint.setTextSize(13);
-        hint.setGravity(Gravity.CENTER);
-        hint.setPadding(0, 8, 0, 28);
+        hint.setText("Auto-links over Wi-Fi. Or scan / paste a code below.");
+        hint.setTextColor(Color.rgb(149, 143, 135)); hint.setTextSize(12);
+        hint.setGravity(Gravity.CENTER); hint.setPadding(0, 6, 0, 16);
         panel.addView(hint);
 
-        hostField = field("Host  (auto-discovered normally)");
+        hostField = field("Host (auto)");
         panel.addView(hostField);
-
-        codeField = field("Pairing code (only if you rotated the token)");
+        codeField = field("One-time code from console QR");
         panel.addView(codeField);
+        tokenField = field("Or paste permanent token from console");
+        panel.addView(tokenField);
 
-        Button connect = new Button(this);
-        connect.setText("CONNECT");
-        connect.setTextColor(Color.BLACK);
-        connect.setBackgroundColor(Color.rgb(206, 94, 50));
-        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        bp.topMargin = 18;
-        connect.setLayoutParams(bp);
-        connect.setOnClickListener(new View.OnClickListener() {
+        Button scan = button("SCAN QR (camera)", Color.rgb(206, 94, 50));
+        scan.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { startScanner(); }
+        });
+        panel.addView(scan);
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        Button pair = button("PAIR", Color.rgb(70, 70, 70));
+        pair.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
-                String host = hostField.getText().toString().trim();
+                String host = host(hostField);
                 String code = codeField.getText().toString().trim();
-                if (host.isEmpty()) host = DEFAULT_HOST;
-                if (code.isEmpty()) code = SELF_PAIR_KEY;
-                connected = true;
-                handler.removeCallbacks(fallback);
-                stopDiscovery();
-                prefs.edit().putString("host", host).putBoolean("paired", true).apply();
-                load(host, code);
+                if (code.isEmpty()) { toast("Enter the one-time code, or scan the QR."); return; }
+                connected = true; handler.removeCallbacks(fallback); stopDiscovery();
+                save(host, true); load(host, code, null);
             }
         });
-        panel.addView(connect);
-
-        TextView foot = new TextView(this);
-        foot.setText("Auto Link & Pair over Wi-Fi — no cable, no debugging");
-        foot.setTextColor(Color.rgb(149, 143, 135));
-        foot.setTextSize(12);
-        foot.setGravity(Gravity.CENTER);
-        foot.setPadding(0, 24, 0, 0);
-        panel.addView(foot);
+        Button useToken = button("USE TOKEN", Color.rgb(70, 70, 70));
+        useToken.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                String host = host(hostField);
+                String token = tokenField.getText().toString().trim();
+                if (token.isEmpty()) { toast("Paste the token from the PC console."); return; }
+                connected = true; handler.removeCallbacks(fallback); stopDiscovery();
+                save(host, true); load(host, null, token);
+            }
+        });
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+        lp.rightMargin = 8;
+        pair.setLayoutParams(lp);
+        useToken.setLayoutParams(new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        row.addView(pair); row.addView(useToken);
+        panel.addView(row);
 
         connectPanel = panel;
+    }
+
+    private void buildScannerPanel() {
+        FrameLayout panel = new FrameLayout(this);
+        panel.setBackgroundColor(Color.BLACK);
+        SurfaceView surface = new SurfaceView(this);
+        panel.addView(surface, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        TextView hint = new TextView(this);
+        hint.setText("Point at the console QR");
+        hint.setTextColor(Color.WHITE);
+        hint.setBackgroundColor(Color.argb(150, 0, 0, 0));
+        hint.setGravity(Gravity.CENTER);
+        hint.setPadding(12, 12, 12, 12);
+        FrameLayout.LayoutParams hp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        hp.topMargin = 24;
+        hint.setLayoutParams(hp);
+        panel.addView(hint);
+        Button cancel = new Button(this);
+        cancel.setText("CANCEL");
+        cancel.setBackgroundColor(Color.rgb(206, 94, 50));
+        cancel.setTextColor(Color.BLACK);
+        FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        cp.bottomMargin = 32;
+        cancel.setLayoutParams(cp);
+        panel.addView(cancel);
+        scanner = new QrScanner(surface, new QrScanner.Listener() {
+            @Override public void onResult(String text) { onQr(text); }
+        });
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { closeScanner(); }
+        });
+        scannerPanel = panel;
+    }
+
+    private void startScanner() {
+        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            openScanner();
+        } else {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_REQ);
+        }
+    }
+
+    private void openScanner() {
+        connectPanel.setVisibility(View.GONE);
+        scannerPanel.setVisibility(View.VISIBLE);
+        scanner.start();
+    }
+
+    private void closeScanner() {
+        scanner.stop();
+        scannerPanel.setVisibility(View.GONE);
+        connectPanel.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int req, String[] perms, int[] grants) {
+        if (req == CAMERA_REQ && grants.length > 0 && grants[0] == PackageManager.PERMISSION_GRANTED) {
+            openScanner();
+        } else {
+            toast("Camera permission needed for the QR scanner.");
+        }
+    }
+
+    private void onQr(String text) {
+        try {
+            Uri u = Uri.parse(text);
+            String code = u.getQueryParameter("pair");
+            String host = u.getHost() + ":" + u.getPort();
+            if (code == null || code.isEmpty() || host.endsWith(":-1")) throw new IllegalArgumentException();
+            closeScanner();
+            connected = true; handler.removeCallbacks(fallback); stopDiscovery();
+            save(host, true); load(host, code, null);
+        } catch (Exception e) {
+            toast("That QR is not a Ryoku Box pairing code.");
+            closeScanner();
+        }
+    }
+
+    private String host(EditText field) {
+        String h = field.getText().toString().trim();
+        return h.isEmpty() ? DEFAULT_HOST : h;
+    }
+
+    private void save(String host, boolean paired) {
+        prefs.edit().putString("host", host).putBoolean("paired", paired).apply();
     }
 
     private EditText field(String hintText) {
@@ -238,42 +348,46 @@ public class MainActivity extends Activity {
         e.setPadding(20, 14, 20, 14);
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        p.bottomMargin = 12;
+        p.bottomMargin = 10;
         e.setLayoutParams(p);
         return e;
     }
+
+    private Button button(String label, int bg) {
+        Button b = new Button(this);
+        b.setText(label);
+        b.setTextColor(Color.BLACK);
+        b.setBackgroundColor(bg);
+        return b;
+    }
+
+    private void toast(String msg) { Toast.makeText(this, msg, Toast.LENGTH_LONG).show(); }
 
     private void showConnect(String message) {
         handler.removeCallbacks(fallback);
         stopDiscovery();
         connectPanel.setVisibility(View.VISIBLE);
-        if (message != null) Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        if (message != null) toast(message);
     }
 
-    private void load(String host, String code) {
+    private void load(String host, String code, String token) {
         String base = host.contains("://") ? host : "http://" + host;
         if (!base.endsWith("/")) base += "/";
         String url = base;
-        if (code != null && !code.isEmpty()) {
-            url = base + "?pair=" + Uri.encode(code);
-            codeField.setText("");
-        }
+        if (code != null && !code.isEmpty()) url = base + "?pair=" + Uri.encode(code);
+        else if (token != null && !token.isEmpty()) { pendingToken = token; }
         connectPanel.setVisibility(View.GONE);
+        scannerPanel.setVisibility(View.GONE);
         web.loadUrl(url);
     }
 
     @Override
     public void onBackPressed() {
-        if (connectPanel.getVisibility() == View.VISIBLE) {
-            connectPanel.setVisibility(View.GONE);
-        } else if (web.canGoBack()) {
-            web.goBack();
-        } else {
-            super.onBackPressed();
-        }
+        if (scannerPanel.getVisibility() == View.VISIBLE) { closeScanner(); return; }
+        if (connectPanel.getVisibility() == View.VISIBLE) { connectPanel.setVisibility(View.GONE); return; }
+        if (web.canGoBack()) web.goBack(); else super.onBackPressed();
     }
 
-    /* Physical volume keys drive the computer's sink, not the phone's. */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         int key = event.getKeyCode();
@@ -291,8 +405,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 }
