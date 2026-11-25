@@ -117,8 +117,13 @@ copies it to Downloads. After this you can turn debugging off again.
 
 ### Step 5 — Pair and use the deck (first launch only)
 
-On the PC, open `http://127.0.0.1:8875/console`. You will see QR codes and the
-permanent bearer token. On the phone, open **Ryoku Box**, then choose one of:
+On the phone, open **Ryoku Box**. It should pair by itself: the app asks the
+agent at the baked LAN address for a fresh one-time code (`/api/pair-code`) and
+exchanges it for a token. No camera, no typing, no baked secret. If that fails,
+the setup screen appears and you can use one of the options below.
+
+On the PC, open `http://127.0.0.1:8875/console` for the QR codes and the
+permanent bearer token. Then choose one of:
 
 - **SCAN QR (camera)** — the app opens its own camera scanner. Point it at the
   console QR. It reads the host and one-time code and pairs automatically. No

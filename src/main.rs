@@ -246,6 +246,12 @@ async fn pair(State(st): State<AppState>, Json(body): Json<PairReq>) -> Response
     Json(json!({ "token": token })).into_response()
 }
 
+/// Short-lived one-time code for the phone's built-in auto-pair. No secret is
+/// exposed: this is the same code shown in the console QR, valid for 120s.
+async fn pair_code_endpoint(State(st): State<AppState>) -> Response {
+    Json(json!({ "code": pair_code(&st) })).into_response()
+}
+
 async fn rotate_token(
     connect: ConnectInfo<SocketAddr>,
     State(st): State<AppState>,
@@ -481,6 +487,7 @@ fn build_router(st: AppState) -> Router {
         .route("/console/qr-usb.svg", get(console_qr_usb))
         .route("/console/approve-all", post(approve_all))
         .route("/api/pair", post(pair))
+        .route("/api/pair-code", get(pair_code_endpoint))
         .route("/api/token/rotate", post(rotate_token))
         .route("/api/ping", get(ping))
         .route("/api/events", get(events))

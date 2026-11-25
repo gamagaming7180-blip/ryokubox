@@ -30,6 +30,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 /** Ryoku Box — fullscreen companion for the Lithic deck on the PC. No baked secrets. */
 public class MainActivity extends Activity {
 
@@ -118,7 +123,11 @@ public class MainActivity extends Activity {
             connected = true;
             load(prefs.getString("host", DEFAULT_HOST), null, null);
         } else {
-            autoConnect();
+            connected = false;
+            handler.postDelayed(fallback, 5000);
+            // The baked address is only an IP, not a secret. Ask the agent for a
+            // fresh one-time code directly — no camera and no mDNS required.
+            fetchPairCode(DEFAULT_HOST);
         }
     }
 
@@ -142,19 +151,12 @@ public class MainActivity extends Activity {
                             @Override public void onResolveFailed(NsdServiceInfo i, int code) { }
                             @Override public void onServiceResolved(NsdServiceInfo i) {
                                 String ip = txt(i, "ip");
-                                String pair = txt(i, "pair");
-                                String name = i.getServiceName();
-                                if ((pair == null || pair.isEmpty()) && name != null && name.startsWith("Ryoku Box ")) {
-                                    pair = name.substring("Ryoku Box ".length()).trim();
-                                }
-                                String host = (ip == null || ip.isEmpty()) ? DEFAULT_HOST : ip + ":" + i.getPort();
+                                String host = (ip == null || ip.isEmpty())
+                                        ? DEFAULT_HOST : ip + ":" + i.getPort();
                                 handler.removeCallbacks(fallback);
                                 stopDiscovery();
                                 if (connected) return;
-                                if (pair == null || pair.isEmpty()) { showConnect(null); return; }
-                                connected = true;
-                                save(host, true);
-                                load(host, pair, null);
+                                fetchPairCode(host);
                             }
                         });
                     } catch (Exception ignored) { }
@@ -164,6 +166,46 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             fallback.run();
         }
+    }
+
+    /** Ask the discovered agent for a fresh one-time code — no camera, no baked token. */
+    private void fetchPairCode(final String host) {
+        new Thread(new Runnable() {
+            @Override public void run() {
+                String code = null;
+                HttpURLConnection conn = null;
+                try {
+                    conn = (HttpURLConnection) new URL("http://" + host + "/api/pair-code").openConnection();
+                    conn.setConnectTimeout(2500);
+                    conn.setReadTimeout(2500);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    String body = reader.readLine();
+                    reader.close();
+                    if (body != null) {
+                        int k = body.indexOf("\"code\"");
+                        if (k >= 0) {
+                            int colon = body.indexOf(':', k);
+                            int a = body.indexOf('"', colon + 1);
+                            int b = body.indexOf('"', a + 1);
+                            if (a > 0 && b > a) code = body.substring(a + 1, b);
+                        }
+                    }
+                } catch (Exception ignored) { }
+                finally { if (conn != null) conn.disconnect(); }
+
+                final String result = code;
+                handler.post(new Runnable() {
+                    @Override public void run() {
+                        if (connected) return;
+                        if (result == null || result.isEmpty()) { showConnect(null); return; }
+                        connected = true;
+                        handler.removeCallbacks(fallback);
+                        save(host, true);
+                        load(host, result, null);
+                    }
+                });
+            }
+        }).start();
     }
 
     private String txt(NsdServiceInfo info, String key) {
