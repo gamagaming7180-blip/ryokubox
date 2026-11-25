@@ -1,37 +1,46 @@
-# Ryoku Box — connection
+# Ryoku Box — connection (current)
 
 ## Normal use: nothing to do
 
-Open the app. It discovers the PC over Wi-Fi (mDNS `_ryokubox._tcp`), pairs with
-its baked device key, and loads the deck. No cable, no USB debugging, no IP, no
-pair code, no firewall command.
+Install the APK, open **Ryoku Box**, and it pairs itself.
 
-Requirements: phone and PC on the same Wi-Fi, and the PC running `ryokubox.service`
-plus `ryokubox-mdns.service` (both are user systemd services and start on login).
+1. The app contacts the PC at the LAN address baked into the APK (an IP only —
+   not a secret).
+2. It calls `GET /api/pair-code` and receives a short-lived one-time code.
+3. It exchanges that code at `/api/pair` for a permanent bearer token.
+4. The token is stored in the app's own WebView storage. Later launches skip
+   pairing entirely.
 
-## After the PC token is rotated or its LAN IP changes
+Requirements: phone and PC on the same Wi‑Fi, and the PC running
+`ryokubox.service` (the mDNS service is optional and not needed for pairing).
 
-One command on the PC, with the phone connected by cable once:
+No cable, no USB debugging, no camera, no pairing code and no firewall command.
+
+## If automatic pairing fails
+
+The app shows its own setup screen with three choices:
+
+- **SCAN QR (camera)** — scan the Wi‑Fi QR on `http://127.0.0.1:8875/console`.
+- **PAIR** — type the one-time code printed under that QR.
+- **USE TOKEN** — paste the permanent token from the console.
+
+The console is loopback-only and returns 403 from a phone. Open it on the PC.
+
+## Rotating the token or changing networks
+
+- **Token rotated:** the phone's saved token is stale. Clear the app's data or
+  use `USE TOKEN` with the new token from the console.
+- **PC LAN IP changed:** rebuild so the baked fallback address is current:
 
 ```sh
 cd ~/ryokubox && ./scripts/connect.sh setup
 ```
 
-It rebuilds the APK with the current token/LAN address, installs it, launches it,
-and copies it to `~/Downloads/RyokuBox.apk`. After that, debugging can be turned
-off again.
-
-If you would rather not use adb at all, copy `~/Downloads/RyokuBox.apk` to the
-phone (file manager over USB, KDE Connect, etc.) and install it manually.
-
 ## Check state
 
 ```sh
-./scripts/connect.sh status
+cd ~/ryokubox && ./scripts/connect.sh status
 ```
 
-## Fallback
-
-The old manual screen is still there if discovery fails: open the app, wait for
-the connect screen, and type the host shown by `status`. It accepts the permanent
-token from `http://127.0.0.1:8875/console` as the pairing code.
+Shows agent health, LAN address, mDNS state, firewall rule and ADB devices. ADB
+is only used to install/rebuild the APK — the deck does not use it.
