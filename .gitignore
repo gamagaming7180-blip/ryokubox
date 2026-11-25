@@ -1,6 +1,7 @@
 /target
-# The APK is token-free and committed on purpose. Signature metadata and the
-# debug keystore stay local.
+# The APK is built locally: it bakes the builder's LAN IP, so a prebuilt one is
+# useless on another network. Never commit it.
+android/RyokuBox.apk
 android/RyokuBox.apk.idsig
 android/build/
 android/classes/

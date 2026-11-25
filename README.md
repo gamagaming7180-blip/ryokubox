@@ -10,6 +10,9 @@ PC at the address baked into the APK, requests a short-lived one-time code from
 `/api/pair-code`, exchanges it for a token, and stores that token only on the
 phone. Later launches open the deck directly.
 
+**There is no downloadable APK.** It has to be built on the PC that runs the
+agent, because that PC's LAN address is baked into it. See Step 3.
+
 No camera, no USB debugging, no pairing code and no firewall command are needed
 for normal use. The in-app QR scanner and paste-token screen remain as fallbacks.
 
@@ -93,10 +96,12 @@ What this does, automatically:
 
 Output: `android/RyokuBox.apk`, also copied to `~/Downloads/RyokuBox.apk`.
 
-> The APK is safe to distribute: it contains no token. Each phone gets its own
-> token by pairing on first launch. The token never appears in the repo. The
-> signed APK is committed at `android/RyokuBox.apk` and can be downloaded
-> directly from GitHub.
+> **You must build the APK yourself on the PC that will run the agent.** It has
+> that PC's LAN IP baked in, so a prebuilt APK from someone else points at the
+> wrong network and will not auto-pair. That is why no APK is committed here and
+> why there is no downloadable release — the repo ships source and `build.sh`
+> only. The APK contains no token; each phone still pairs for itself on first
+> launch, and the token never appears in the repo.
 
 ### Step 4 — Install the APK on the phone (two options)
 

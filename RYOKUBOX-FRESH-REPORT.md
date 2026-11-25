@@ -64,9 +64,10 @@ from the pushed diff.
 ## 5. Distribution
 
 - Source: https://github.com/gamagaming7180-blip/ryokubox
-- Release with APK: https://github.com/gamagaming7180-blip/ryokubox/releases/tag/v1.0.0-tokenfree
-- The signed APK is also committed at `android/RyokuBox.apk` and copied to
-  `~/Downloads/RyokuBox.apk`.
+- No APK is distributed and no APK is committed. The app has the builder's LAN
+  IP baked in, so a prebuilt APK only works on that one network. Clone the repo
+  on your PC, run the agent and build your own with `./android/build.sh`.
+  The result is also copied to `~/Downloads/RyokuBox.apk` for sideloading.
 
 ## 6. Undo
 

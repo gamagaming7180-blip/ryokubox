@@ -2,7 +2,9 @@
 
 ## Normal use: nothing to do
 
-Install the APK, open **Ryoku Box**, and it pairs itself.
+Build the APK on your own PC with `./android/build.sh` (a prebuilt APK from
+someone else has the wrong network address), install it, open **Ryoku Box**,
+and it pairs itself.
 
 1. The app contacts the PC at the LAN address baked into the APK (an IP only —
    not a secret).
