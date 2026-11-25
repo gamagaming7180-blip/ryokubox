@@ -2,7 +2,9 @@
 # Build the Ryoku Box Android APK with the Android SDK command-line tools.
 set -euo pipefail
 
-SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/home/gamanotsuffering/Android/Sdk}}"
+SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/Android/Sdk}}"
+[[ -d "$SDK" ]] || SDK="/opt/android-sdk"
+[[ -d "$SDK" ]] || SDK="/usr/lib/android-sdk"
 BT="$SDK/build-tools/35.0.0"
 AJAR="$SDK/platforms/android-35/android.jar"
 HERE="$(cd "$(dirname "$0")" && pwd)"

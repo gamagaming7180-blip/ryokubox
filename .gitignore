@@ -7,5 +7,4 @@ android/build/
 android/classes/
 android/dex/
 android/gen/
-android/debug.keystore
 *.tmp

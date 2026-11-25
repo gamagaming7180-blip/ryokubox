@@ -52,6 +52,28 @@ Then just open **Ryoku Box** on the phone. The top bar shows
 
 ## 3. Setting it up from scratch (step by step)
 
+### Step 0 — Install the Android build tools (once)
+
+You need a JDK with `javac`/`keytool`, and the Android SDK platform 35 with
+build-tools 35.0.0. This repo includes a helper that installs exactly those:
+
+```sh
+cd ~/ryokubox
+./scripts/setup-android-sdk.sh
+export ANDROID_SDK_ROOT="$HOME/Android/Sdk"
+```
+
+The SDK itself (~280 MB) is **not** committed — Google does not allow
+redistributing it, and the installer fetches the pinned versions. The small
+files that *are* committed and needed to build are:
+
+- `android/AndroidManifest.xml`
+- `android/src/**/*.java` (including `QrScanner.java`)
+- `android/res/mipmap-*/ic_launcher.png`
+- `android/libs/core-3.5.3.jar` (vendored ZXing QR decoder)
+- `android/debug.keystore` (committed so every build has the same signature)
+- `android/build.sh`
+
 ### Step 1 — Build and start the PC agent
 
 ```sh
