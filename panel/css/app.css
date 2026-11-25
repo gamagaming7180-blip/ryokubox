@@ -237,18 +237,6 @@ body.on-home #scrim {
 
 /* ---------- 02 Media — immersive, Spicy-inspired, not Spotify ---------- */
 .media-stage { position: relative; isolation: isolate; }
-.media-bg {
-  position: absolute; inset: -10%; z-index: -2;
-  background-size: cover; background-position: center;
-  filter: blur(54px) saturate(150%); opacity: .62; transform: scale(1.06);
-}
-.media-veil {
-  position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(180deg,
-    color-mix(in srgb, var(--lithic-ground) 42%, transparent) 0%,
-    transparent 42%,
-    color-mix(in srgb, var(--lithic-ground) 76%, transparent) 100%);
-}
 .media-top { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--lithic-space-s2); }
 .media-kicker { font: 500 11px/1 var(--lithic-font-mono); letter-spacing: .18em; color: var(--lithic-gold); }
 .media-hero { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; gap: clamp(24px, 4vw, 72px); }
@@ -264,10 +252,9 @@ body.on-home #scrim {
 #track-title {
   color: var(--lithic-fg); font-family: var(--lithic-font-sans);
   font-size: clamp(34px, 6.4vh, 76px); font-weight: 700; line-height: 1.02; letter-spacing: -.02em;
-  overflow: hidden; text-overflow: ellipsis;
+  overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 18px rgba(0, 0, 0, .45);
 }
 #track-artist { color: var(--lithic-fg2); font-size: clamp(16px, 2.4vh, 24px); }
-.hero-rule { width: 72px; height: 3px; background: var(--lithic-gold); opacity: .9; transform-origin: left center; }
 #track-source { color: var(--lithic-fg3); }
 .media-bottom { flex: 0 0 auto; display: flex; align-items: center; gap: var(--lithic-space-s3); }
 .media-volume { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: var(--lithic-space-s2); color: var(--lithic-fg2); }
@@ -287,9 +274,6 @@ body.on-home #scrim {
 .transport .play { width: 56px; height: 56px; min-width: 56px; min-height: 56px; }
 .transport .play .l-glyph { font-size: 28px; }
 .transport .seek .l-glyph { font-size: 22px; }
-
-@keyframes rb-pulse { 0%, 100% { opacity: .5; transform: scaleX(.7); } 50% { opacity: 1; transform: scaleX(1.06); } }
-body.rb-playing .hero-rule { animation: rb-pulse 1.8s var(--rb-ease) infinite; }
 
 /* ---------- 03 Settings ---------- */
 .settings-inner { flex-direction: row; gap: var(--lithic-space-s3); }

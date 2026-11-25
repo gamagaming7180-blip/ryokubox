@@ -229,9 +229,7 @@ function setBackdrop(el, url) {
 
 /* Media art now lives only in the compact Media-page mini card. */
 function updateBackdrops() {
-  const art = artObjectUrl || wpObjectUrl;
-  setBackdrop($('#mini-art'), art);
-  setBackdrop($('#media-bg'), art);
+  setBackdrop($('#mini-art'), artObjectUrl || wpObjectUrl);
 }
 
 /* Compact HOME strip: live link facts and the wallpaper's palette. */
@@ -415,7 +413,6 @@ async function refreshAudio() {
   renderSinks(a.sinks, a.sink_name);
   setMuteTile(a.muted);
   paintPlayButtons(a.playing === true);
-  document.body.classList.toggle('rb-playing', a.playing === true);
   updateBackdrops();
   if (a.art_url) loadArt(a.art_url);
 }
