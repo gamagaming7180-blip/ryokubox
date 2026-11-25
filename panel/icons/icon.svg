@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Ryoku Box">
+  <path d="M18 0H110L128 18V110L110 128H18L0 110V18Z" fill="#000000"/>
+  <path d="M22 3H106L125 22V106L106 125H22L3 106V22Z" fill="none" stroke="#46433f" stroke-width="2"/>
+  <path d="M40 22H88L94 28V55L112 55L112 73L94 73V100L88 106H40L34 100V73L16 73V55L34 55V28Z" fill="#ce5e32"/>
+  <text x="64" y="76" text-anchor="middle" font-family="sans-serif" font-size="40" font-weight="700" fill="#000000">力</text>
+</svg>

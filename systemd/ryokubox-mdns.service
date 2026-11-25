@@ -1,0 +1,13 @@
+[Unit]
+Description=Ryoku Box mDNS publisher (_ryokubox._tcp on port 8875)
+After=ryokubox.service
+Wants=ryokubox.service
+
+[Service]
+Type=simple
+ExecStart=%h/ryokubox/scripts/mdns.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

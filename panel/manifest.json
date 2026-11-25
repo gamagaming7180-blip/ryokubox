@@ -1,0 +1,19 @@
+{
+  "name": "Ryoku Box",
+  "short_name": "Ryokubox",
+  "description": "Lithic companion deck for the Ryoku desktop",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#000000",
+  "theme_color": "#ce5e32",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

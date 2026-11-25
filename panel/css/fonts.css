@@ -1,0 +1,41 @@
+/* Ryoku Box — local faces for offline USB use.
+   Adapted from Ryoku Lithic web library fonts.css (GPL-3.0-or-later).
+   Geologica and Martian Mono come from docs/lithic/library/go/fonts;
+   Material Symbols Sharp is bundled locally for offline rendering. */
+@font-face {
+  font-family: "Geologica";
+  src: url("../fonts/Geologica-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geologica";
+  src: url("../fonts/Geologica-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geologica";
+  src: url("../fonts/Geologica-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Martian Mono";
+  src: url("../fonts/MartianMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Martian Mono";
+  src: url("../fonts/MartianMono-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Material Symbols Sharp";
+  src: url("../fonts/MaterialSymbolsSharp.ttf") format("truetype");
+  font-weight: 100 700;
+  font-style: normal;
+  font-display: block;
+}

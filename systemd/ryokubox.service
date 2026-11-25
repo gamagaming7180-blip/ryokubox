@@ -1,0 +1,14 @@
+[Unit]
+Description=Ryoku Box companion agent (Lithic deck on port 8875)
+Documentation=https://github.com/Ryoku-dev/ryoku
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/ryokubox --mode auto
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

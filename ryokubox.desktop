@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Ryoku Box
+GenericName=Lithic companion deck
+Comment=Wallpaper, vitals, audio and shortcuts for your Ryoku desktop
+Exec=firefox --new-window http://127.0.0.1:8875/
+Icon=/home/gamanotsuffering/ryokubox/panel/icons/icon.svg
+Terminal=false
+Categories=Utility;System;
+StartupNotify=true
+Keywords=ryoku;box;deck;panel;

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Ryoku Box</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/css/lithic.css">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+
+<!-- Dual-layer wallpaper canvas. Art may curve and glow; chrome stays cut. -->
+<div id="wallpapers" aria-hidden="true">
+  <div id="wp-a" class="wp"></div>
+  <div id="wp-b" class="wp"></div>
+  <div id="scrim"></div>
+  <div id="grain"></div>
+</div>
+
+<!-- Pairing gate, shown only until a bearer token is stored. -->
+<div id="pair-gate" hidden>
+  <div class="gate-card l-cut">
+    <div class="gate-mark">力</div>
+    <h1 class="l-type-section">Pair Ryoku Box</h1>
+    <p class="l-type-detail">Open the local console on your computer, scan the QR, or paste the code below.</p>
+    <form id="pair-form">
+      <span class="l-field-control l-cut"><input class="l-text-field" id="pair-code" placeholder="pairing code" autocomplete="off"></span>
+      <button class="l-plaque l-gold" type="submit">Pair</button>
+    </form>
+    <p class="l-type-caption" id="pair-msg"></p>
+  </div>
+</div>
+
+<div id="shell">
+  <header id="topbar" class="l-cut">
+    <div class="brand" aria-label="Ryoku Box">力</div>
+    <nav id="page-nav" aria-label="Slides">
+      <button class="page-tab" data-page="0" aria-current="true"><span class="tab-num">00</span><span class="tab-label">HOME</span></button>
+      <button class="page-tab" data-page="1"><span class="tab-num">01</span><span class="tab-label">DECK</span></button>
+      <button class="page-tab" data-page="2"><span class="tab-num">02</span><span class="tab-label">MEDIA</span></button>
+      <button class="page-tab" data-page="3"><span class="tab-num">03</span><span class="tab-label">SETTINGS</span></button>
+    </nav>
+    <div id="clock" class="l-type-mono l-numeric">00:00</div>
+    <div id="conn-chip" class="l-cut l-place-chip"><span id="conn-text">LINK</span></div>
+  </header>
+
+  <main id="pages">
+
+    <!-- 00 HOME -->
+    <section class="page" id="page-home" aria-label="Home">
+      <div class="page-inner home-inner">
+        <div class="home-lead">
+          <span class="home-mark">力</span>
+          <span class="l-type-group">RYOKU BOX · 00</span>
+        </div>
+
+        <div class="home-clock-row">
+          <div id="home-clock" class="l-type-name l-numeric">00:00</div>
+          <div class="home-motto l-type-proof">力と美のために</div>
+        </div>
+
+        <!-- High-definition now-playing banner fills the previously empty area. -->
+        <div id="now-banner" class="l-cut" hidden>
+          <div id="banner-art" class="banner-art"></div>
+          <div class="banner-scrim"></div>
+          <div class="banner-body">
+            <span class="banner-kicker l-type-caption">NOW PLAYING · <span id="banner-player">—</span></span>
+            <strong id="banner-title" class="l-type-section">—</strong>
+            <span id="banner-artist" class="l-type-detail">—</span>
+            <span id="banner-sink" class="l-type-caption">—</span>
+          </div>
+          <button class="l-icon-plaque l-gold banner-play" data-media="play-pause" aria-label="Play or pause">
+            <span class="l-glyph" aria-hidden="true">play_arrow</span>
+          </button>
+        </div>
+
+        <div class="home-summary" id="home-summary">
+          <div class="summary-card l-cut"><span class="l-type-caption">SYSTEM</span><strong id="sum-cpu" class="l-type-section l-numeric">—</strong><span class="l-type-detail">CPU</span></div>
+          <div class="summary-card l-cut"><span class="l-type-caption">MEMORY</span><strong id="sum-ram" class="l-type-section l-numeric">—</strong><span class="l-type-detail">RAM</span></div>
+          <div class="summary-card l-cut"><span class="l-type-caption">OUTPUT</span><strong id="sum-sink" class="l-type-section">—</strong><span class="l-type-detail" id="sum-sink-detail">audio sink</span></div>
+        </div>
+        <div class="home-foot l-type-caption" id="home-foot">LINKING…</div>
+      </div>
+    </section>
+
+    <!-- 01 CONTROLS / DECK -->
+    <section class="page" id="page-controls" aria-label="Controls">
+      <div class="page-inner controls-inner">
+        <div class="controls-columns">
+          <div class="controls-main">
+            <div class="section-head l-type-group">01 / VITALS</div>
+            <div class="vitals-grid" id="vitals-grid"></div>
+
+            <div class="section-head l-type-group">02 / CONNECTIONS &amp; SHORTCUTS</div>
+            <div class="tile-grid" id="tile-grid"></div>
+
+            <div class="section-head l-type-group">03 / LEVELS</div>
+            <div class="levels l-cut" id="levels">
+              <div class="level-row">
+                <span class="l-type-label level-label">VOLUME</span>
+                <div class="l-slider-field" id="volume-field" style="--l-value:.5">
+                  <input class="l-slider" id="volume-slider" type="range" min="0" max="100" value="50" aria-label="Volume">
+                  <span class="l-slider-rail"><span class="l-slider-fill"></span><span class="l-slider-handle"></span></span>
+                </div>
+                <span class="l-type-label l-numeric" id="volume-value">50%</span>
+                <button class="l-icon-plaque l-quiet l-small" id="levels-toggle" data-l-disclosure-trigger aria-expanded="false" aria-controls="levels-drawer" aria-label="Expand levels"><span class="l-glyph" aria-hidden="true">expand_more</span></button>
+              </div>
+              <div class="l-disclosure" id="levels-disclosure">
+                <div class="l-disclosure-content" id="levels-drawer">
+                  <div class="drawer-title l-type-group">OUTPUT DEVICE</div>
+                  <div id="sink-list" class="sink-list"></div>
+                  <div class="drawer-note l-type-caption">Volume changes do not silently change mute.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="media-mini l-cut">
+            <div class="mini-kicker l-type-caption">NOW PLAYING</div>
+            <div id="mini-art" class="mini-art l-hatch"></div>
+            <strong id="mini-title" class="l-type-title">—</strong>
+            <span id="mini-artist" class="l-type-detail">—</span>
+            <div class="mini-transport">
+              <button class="l-icon-plaque l-quiet l-small" data-media="prev" aria-label="Previous"><span class="l-glyph" aria-hidden="true">skip_previous</span></button>
+              <button class="l-icon-plaque l-gold" data-media="play-pause" aria-label="Play or pause"><span class="l-glyph" aria-hidden="true">play_arrow</span></button>
+              <button class="l-icon-plaque l-quiet l-small" data-media="next" aria-label="Next"><span class="l-glyph" aria-hidden="true">skip_next</span></button>
+            </div>
+          </div>
+        </div>
+
+        <footer class="bottom-bar l-cut" aria-label="Session actions">
+          <div class="hold l-cut" data-session="lock" role="button" tabindex="0" aria-label="Hold to lock"><span class="hold-fill"></span><span class="hold-body"><span class="l-glyph" aria-hidden="true">lock</span><span class="hold-label">Lock</span></span></div>
+          <div class="hold l-cut" data-session="sleep" role="button" tabindex="0" aria-label="Hold to sleep"><span class="hold-fill"></span><span class="hold-body"><span class="l-glyph" aria-hidden="true">bedtime</span><span class="hold-label">Sleep</span></span></div>
+          <div class="hold l-cut" data-session="logout" role="button" tabindex="0" aria-label="Hold to log out"><span class="hold-fill"></span><span class="hold-body"><span class="l-glyph" aria-hidden="true">logout</span><span class="hold-label">Log out</span></span></div>
+          <div class="hold l-cut" data-session="restart" role="button" tabindex="0" aria-label="Hold to restart"><span class="hold-fill"></span><span class="hold-body"><span class="l-glyph" aria-hidden="true">restart_alt</span><span class="hold-label">Restart</span></span></div>
+          <div class="hold l-cut danger" data-session="poweroff" role="button" tabindex="0" aria-label="Hold to power off"><span class="hold-fill"></span><span class="hold-body"><span class="l-glyph" aria-hidden="true">power_settings_new</span><span class="hold-label">Power off</span></span></div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- 02 MEDIA -->
+    <section class="page" id="page-media" aria-label="Media">
+      <div class="page-inner media-stage">
+        <div class="art-corner">
+          <div id="art-frame" class="l-cut">
+            <img id="art-img" alt="Album art" hidden>
+            <div id="art-empty" class="l-hatch art-empty"></div>
+          </div>
+          <div id="track-title" class="l-type-title">Nothing playing</div>
+          <div id="track-artist" class="l-type-detail">—</div>
+          <div id="track-source" class="l-type-caption">—</div>
+        </div>
+
+        <div class="media-middle">
+          <div class="seek-row">
+            <button class="l-icon-plaque l-tonal seek" data-media="seek-back" aria-label="Back 10 seconds"><span class="l-glyph" aria-hidden="true">replay_10</span></button>
+            <button class="l-icon-plaque l-tonal seek" data-media="seek-fwd" aria-label="Forward 10 seconds"><span class="l-glyph" aria-hidden="true">forward_10</span></button>
+          </div>
+          <div class="media-volume">
+            <span class="l-glyph" aria-hidden="true">volume_up</span>
+            <div class="l-slider-field" id="media-volume-field" style="--l-value:.5">
+              <input class="l-slider" id="media-volume-slider" type="range" min="0" max="100" value="50" aria-label="Media volume">
+              <span class="l-slider-rail"><span class="l-slider-fill"></span><span class="l-slider-handle"></span></span>
+            </div>
+            <span class="l-type-label l-numeric" id="media-volume-value">50%</span>
+          </div>
+          <div class="badges">
+            <span class="l-cut badge" id="player-badge"><span class="l-glyph" aria-hidden="true">graphic_eq</span><span id="player-name">no player</span></span>
+            <span class="l-cut badge" id="sink-badge"><span class="l-glyph" aria-hidden="true">speaker</span><span id="sink-name">no output</span></span>
+          </div>
+        </div>
+
+        <div class="transport l-cut">
+          <button class="l-icon-plaque l-quiet" data-media="prev" aria-label="Previous"><span class="l-glyph" aria-hidden="true">skip_previous</span></button>
+          <button class="l-icon-plaque l-gold play" data-media="play-pause" aria-label="Play or pause"><span class="l-glyph" aria-hidden="true">play_arrow</span></button>
+          <button class="l-icon-plaque l-quiet" data-media="next" aria-label="Next"><span class="l-glyph" aria-hidden="true">skip_next</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 SETTINGS -->
+    <section class="page" id="page-settings" aria-label="Settings">
+      <div class="page-inner settings-inner">
+        <nav class="settings-index" aria-label="Settings sections">
+          <button class="settings-index-item" data-section="0" aria-current="true"><span class="idx-num">01</span><span>Appearance</span></button>
+          <button class="settings-index-item" data-section="1"><span class="idx-num">02</span><span>Connection</span></button>
+          <button class="settings-index-item" data-section="2"><span class="idx-num">03</span><span>Shortcuts</span></button>
+          <button class="settings-index-item" data-section="3"><span class="idx-num">04</span><span>About</span></button>
+          <button class="settings-index-item" data-section="4"><span class="idx-num">05</span><span>Link</span></button>
+          <div class="index-foot l-type-caption">力 · SETTINGS 設定</div>
+        </nav>
+
+        <div class="settings-panes">
+          <section class="settings-pane l-cut active" data-section="0">
+            <div class="section-head l-type-group">01 / APPEARANCE</div>
+            <div class="setting-line"><span class="l-type-label">Mode</span><div class="seg" id="mode-seg"><button data-mode="dark" class="on">DARK</button><button data-mode="light">LIGHT</button></div></div>
+            <div class="setting-line"><span class="l-type-label">Contrast</span><div class="seg" id="contrast-seg"><button data-contrast="standard" class="on">STANDARD</button><button data-contrast="high">HIGH</button></div></div>
+            <div class="setting-line"><span class="l-type-label">Reduce motion</span><button class="l-toggle" id="reduce-toggle" role="switch" aria-checked="false">Off</button></div>
+            <div class="pane-note l-type-caption">Tap a choice to apply it now. Saved on this device.</div>
+          </section>
+
+          <section class="settings-pane l-cut" data-section="1">
+            <div class="section-head l-type-group">02 / CONNECTION</div>
+            <div class="setting-line"><span class="l-type-label">Link</span><span class="l-type-detail mono" id="set-status">—</span></div>
+            <div class="setting-line"><span class="l-type-label">Host</span><span class="l-type-detail mono" id="set-host">—</span></div>
+            <div class="setting-line"><span class="l-type-label">Transport</span><span class="l-type-detail" id="set-transport">—</span></div>
+            <div class="setting-line"><span class="l-type-label">Token</span><span class="l-type-detail mono" id="set-token">••••••••</span></div>
+            <div class="setting-actions">
+              <button class="l-plaque l-quiet l-small" id="btn-refresh-wp">Refresh wallpaper</button>
+              <button class="l-plaque l-tonal l-small" id="btn-reload">Reload deck</button>
+              <button class="l-plaque l-danger-line l-small" id="btn-rotate">Rotate token</button>
+            </div>
+            <div class="pane-note l-type-caption">Auto-linked over Wi-Fi. No cable or pairing code needed.</div>
+          </section>
+
+          <section class="settings-pane l-cut" data-section="2">
+            <div class="section-head l-type-group">03 / SHORTCUTS</div>
+            <div class="pane-subhead l-type-caption" id="sc-count">0 shortcuts</div>
+            <div id="settings-shortcuts" class="shortcut-list"></div>
+            <form id="shortcut-form" class="shortcut-form">
+              <input class="l-text-field" id="sc-label" placeholder="Label" aria-label="Shortcut label">
+              <input class="l-text-field" id="sc-cmd" placeholder="/usr/bin/kitty" aria-label="Shortcut command">
+              <button class="l-plaque l-tonal l-small" type="submit">Add</button>
+            </form>
+            <div class="pane-note l-type-caption">Added here run on the computer, never on the phone.</div>
+          </section>
+
+          <section class="settings-pane l-cut" data-section="3">
+            <div class="section-head l-type-group">04 / ABOUT</div>
+            <div class="about-facts">
+              <span class="l-type-caption">VERSION</span><span class="l-type-detail mono">Ryoku Box 1.0.0</span>
+              <span class="l-type-caption">SERVICE</span><span class="l-type-detail mono">axum · port 8875</span>
+              <span class="l-type-caption">HOST</span><span class="l-type-detail mono" id="set-host-about">—</span>
+              <span class="l-type-caption">DISPLAY</span><span class="l-type-detail">Android WebView · Lithic chrome</span>
+              <span class="l-type-caption">PALETTE</span><span class="l-type-detail">Live matugen · wallpaper synced</span>
+              <span class="l-type-caption">LICENCE</span><span class="l-type-detail">GPL-3.0-or-later</span>
+            </div>
+            <div class="pane-note l-type-caption">力 · Built for the Ryoku desktop.</div>
+          </section>
+
+          <section class="settings-pane l-cut" data-section="4">
+            <div class="section-head l-type-group">05 / LINK &amp; PAIRING</div>
+            <div class="setting-line"><span class="l-type-label">Host</span><input class="l-text-field" id="link-host" placeholder="127.0.0.1:8875" aria-label="Agent host"></div>
+            <div class="setting-line"><span class="l-type-label">Pair code</span><input class="l-text-field" id="link-code" placeholder="optional, once" aria-label="Pairing code"></div>
+            <div class="setting-actions"><button class="l-plaque l-gold l-small" id="link-apply">Apply &amp; connect</button></div>
+            <div class="pane-note l-type-caption">USB: run adb reverse tcp:8875 tcp:8875, then use 127.0.0.1:8875. Wi-Fi: use the computer's LAN address. Pairing codes come from the console at http://127.0.0.1:8875/console.</div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

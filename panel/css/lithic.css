@@ -1,0 +1,16 @@
+/* Ryoku Box — adapted from Ryoku Lithic web library (docs/lithic/library/web).
+   Copyright (C) 2025 Ryoku-dev
+   SPDX-License-Identifier: GPL-3.0-or-later
+   This program is free software: you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free Software
+   Foundation, either version 3 of the License, or (at your option) any later
+   version. Kept verbatim in structure; only asset paths are localised to panel/fonts. */
+
+@import url("./tokens.css");
+@import url("./fonts.css");
+@import url("./foundation.css");
+
+@import url("./controls.css");
+@import url("./segmented.css");
+@import url("./lists.css");
+@import url("./overlays.css");
